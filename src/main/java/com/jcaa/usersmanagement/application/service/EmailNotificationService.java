@@ -46,7 +46,7 @@ public final class EmailNotificationService {
     final EmailDestinationModel destination =
             buildDestination(user, SUBJECT_CREATED, body);
 
-    sendOrLog(destination);
+    sendEmail(destination);
   }
 
   public void notifyUserUpdated(final UserModel user) {
@@ -65,22 +65,7 @@ public final class EmailNotificationService {
     final EmailDestinationModel destination =
             buildDestination(user, SUBJECT_UPDATED, body);
 
-    sendOrLog(destination);
-  }
-
-  // Clean Code - Regla 6 (evitar parámetros booleanos de control):
-  // El boolean includePassword cambia completamente el comportamiento del método:
-  // - true  → usa plantilla de creación con contraseña
-  // - false → usa plantilla de actualización sin contraseña
-  // La regla dice: si un boolean altera el flujo, probablemente hay dos responsabilidades.
-  // Solución: dos métodos separados notifyUserCreated() y notifyUserUpdated() (que ya existen).
-  public void sendNotificationWithFlag(
-      final UserModel user, final boolean includePassword, final String plainPassword) {
-    if (includePassword) {
-      notifyUserCreated(user, plainPassword);
-    } else {
-      notifyUserUpdated(user);
-    }
+    sendEmail(destination);
   }
 
   private static EmailDestinationModel buildDestination(
@@ -115,22 +100,15 @@ public final class EmailNotificationService {
     return result;
   }
 
-  // Clean Code - Regla 7 (evitar efectos secundarios ocultos):
-  // El nombre "sendOrLog" promete dos cosas (enviar o loguear), pero ninguna de las
-  // dos describe el comportamiento real completo: en el flujo exitoso NO loguea nada,
-  // y en el fallido loguea Y re-lanza la excepción.
-  // Los llamadores (notifyUserCreated, notifyUserUpdated) creen que solo "envían un correo",
-  // pero en realidad también producen un log de advertencia de forma inesperada.
-  // La regla dice: una función no debe realizar acciones inesperadas además de lo que
-  // su nombre promete.
-  private void sendOrLog(final EmailDestinationModel destination) {
+  private void sendEmail(final EmailDestinationModel destination) {
     try {
       emailSenderPort.send(destination);
     } catch (final EmailSenderException senderException) {
       log.log(
-          Level.WARNING,
-          "[EmailNotificationService] No se pudo enviar correo a: {0}. Causa: {1}",
-          new Object[] {destination.getDestinationEmail(), senderException.getMessage()});
+              Level.WARNING,
+              "[EmailNotificationService] No se pudo enviar correo a: {0}. Causa: {1}",
+              new Object[] {destination.getDestinationEmail(), senderException.getMessage()}
+      );
       throw senderException;
     }
   }
