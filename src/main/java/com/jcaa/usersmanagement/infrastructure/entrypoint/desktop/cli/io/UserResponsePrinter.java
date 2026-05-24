@@ -39,27 +39,27 @@ public final class UserResponsePrinter {
     console.printf(
             ROW_FORMAT,
             "ID",
-            response.getId());
+            response.id());
 
     console.printf(
             ROW_FORMAT,
             "Name",
-            response.getName());
+            response.name());
 
     console.printf(
             ROW_FORMAT,
             "Email",
-            response.getEmail());
+            response.email());
 
     console.printf(
             ROW_FORMAT,
             "Role",
-            response.getRole());
+            response.role());
 
     console.printf(
             ROW_FORMAT,
             "Status",
-            getStatusLabel(response.getStatus()));
+            getStatusLabel(response.status()));
 
     console.println(SEPARATOR);
   }
@@ -99,8 +99,8 @@ public final class UserResponsePrinter {
       summary.append(
               String.format(
                       "  %s (%s)%n",
-                      user.getName(),
-                      getStatusLabel(user.getStatus())));
+                      user.name(),
+                      getStatusLabel(user.status())));
     }
 
     console.println(summary.toString());
