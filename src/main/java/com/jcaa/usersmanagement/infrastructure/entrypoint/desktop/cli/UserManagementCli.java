@@ -20,74 +20,162 @@ import lombok.RequiredArgsConstructor;
 public final class UserManagementCli {
 
   private static final String BANNER =
-      """
-      ==========================================
-           Users Management System
-      ==========================================""";
+          """
+          ==========================================
+               Users Management System
+          ==========================================""";
 
-  private static final String MENU_BORDER = "  ==========================================";
+  private static final String MENU_BORDER =
+          "  ==========================================";
+
+  // correccion regla 10 usar constantes
+  private static final String INVALID_OPTION_MESSAGE =
+          "  Invalid option. Please try again.";
+
+  private static final String GOODBYE_MESSAGE =
+          "\n  Goodbye!\n";
+
+  private static final String VALIDATION_ERRORS_MESSAGE =
+          "  Validation errors:";
+
+  private static final String UNEXPECTED_ERROR_MESSAGE =
+          "  Unexpected error: ";
+
+  private static final String MAIN_MENU_TITLE =
+          "    Main Menu";
 
   private final UserController userController;
   private final ConsoleIO console;
 
   public void start() {
+
     console.println(BANNER);
-    final UserResponsePrinter printer = new UserResponsePrinter(console);
+
+    final UserResponsePrinter printer =
+            new UserResponsePrinter(console);
+
     runLoop(buildHandlers(printer));
   }
 
-  private void runLoop(final Map<MenuOption, OperationHandler> handlers) {
+  private void runLoop(
+          final Map<MenuOption, OperationHandler> handlers) {
+
     boolean running = true;
+
     while (running) {
+
       printMenu();
-      final int choice = console.readInt("\n  Option: ");
-      final Optional<MenuOption> option = MenuOption.fromNumber(choice);
+
+      final int choice =
+              console.readInt("\n  Option: ");
+
+      final Optional<MenuOption> option =
+              MenuOption.fromNumber(choice);
 
       if (option.isEmpty()) {
-        console.println("  Invalid option. Please try again.");
+
+        console.println(INVALID_OPTION_MESSAGE);
+
       } else if (option.get() == MenuOption.EXIT) {
-        console.println("\n  Goodbye!\n");
+
+        console.println(GOODBYE_MESSAGE);
+
         running = false;
+
       } else {
-        executeHandler(handlers, option.get());
+
+        executeHandler(
+                handlers,
+                option.get());
       }
     }
   }
 
   private void executeHandler(
-      final Map<MenuOption, OperationHandler> handlers, final MenuOption option) {
+          final Map<MenuOption, OperationHandler> handlers,
+          final MenuOption option) {
+
     try {
+
       handlers.get(option).handle();
+
     } catch (final ConstraintViolationException exception) {
-      console.println("  Validation errors:");
+
+      console.println(VALIDATION_ERRORS_MESSAGE);
+
       exception.getConstraintViolations()
-          .forEach(violation -> console.println("    - " + violation.getMessage()));
+              .forEach(
+                      violation ->
+                              console.println(
+                                      "    - " + violation.getMessage()));
+
     } catch (final RuntimeException exception) {
-      console.println("  Unexpected error: " + exception.getMessage());
+
+      console.println(
+              UNEXPECTED_ERROR_MESSAGE
+                      + exception.getMessage());
     }
   }
 
-  private Map<MenuOption, OperationHandler> buildHandlers(final UserResponsePrinter printer) {
+  private Map<MenuOption, OperationHandler> buildHandlers(
+          final UserResponsePrinter printer) {
+
     return Map.of(
-        MenuOption.LIST_USERS,  new ListUsersHandler(userController, printer),
-        MenuOption.FIND_USER,   new FindUserByIdHandler(userController, console, printer),
-        MenuOption.CREATE_USER, new CreateUserHandler(userController, console, printer),
-        MenuOption.UPDATE_USER, new UpdateUserHandler(userController, console, printer),
-        MenuOption.DELETE_USER, new DeleteUserHandler(userController, console),
-        MenuOption.LOGIN,       new LoginHandler(userController, console, printer));
+            MenuOption.LIST_USERS,
+            new ListUsersHandler(
+                    userController,
+                    printer),
+
+            MenuOption.FIND_USER,
+            new FindUserByIdHandler(
+                    userController,
+                    console,
+                    printer),
+
+            MenuOption.CREATE_USER,
+            new CreateUserHandler(
+                    userController,
+                    console,
+                    printer),
+
+            MenuOption.UPDATE_USER,
+            new UpdateUserHandler(
+                    userController,
+                    console,
+                    printer),
+
+            MenuOption.DELETE_USER,
+            new DeleteUserHandler(
+                    userController,
+                    console),
+
+            MenuOption.LOGIN,
+            new LoginHandler(
+                    userController,
+                    console,
+                    printer));
   }
 
   private void printMenu() {
+
     console.println();
-    // VIOLACIÓN Regla 10: se usa el String literal "==================..." hardcodeado directamente
-    // en vez de reutilizar la constante MENU_BORDER que ya está definida en la misma clase.
-    console.println("  ==========================================");
-    console.println("    Main Menu");
-    console.println("  ==========================================");
-    // VIOLACIÓN Regla 4: nombre abreviado "opt" en lugar del nombre descriptivo "option".
-    for (final MenuOption opt : MenuOption.values()) {
-      console.printf("    [%d] %s%n", opt.getNumber(), opt.getDescription());
+
+    // correccion regla 10 reutilizar constante
+    console.println(MENU_BORDER);
+
+    console.println(MAIN_MENU_TITLE);
+
+    console.println(MENU_BORDER);
+
+    // correccion regla 4 usar nombres descriptivos
+    for (final MenuOption option : MenuOption.values()) {
+
+      console.printf(
+              "    [%d] %s%n",
+              option.getNumber(),
+              option.getDescription());
     }
-    console.println("  ==========================================");
+
+    console.println(MENU_BORDER);
   }
 }
