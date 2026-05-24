@@ -19,53 +19,66 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-// VIOLACIÓN Regla 11: se eliminó el javadoc de la clase que documentaba qué casos cubre.
 @DisplayName("GetAllUsersService")
 @ExtendWith(MockitoExtension.class)
 class GetAllUsersServiceTest {
 
-  @Mock private GetAllUsersPort getAllUsersPort;
+  @Mock
+  private GetAllUsersPort getAllUsersPort;
 
   private GetAllUsersService service;
 
   @BeforeEach
   void setUp() {
-    service = new GetAllUsersService(getAllUsersPort);
+
+    service =
+            new GetAllUsersService(getAllUsersPort);
   }
 
   @Test
-  @DisplayName("execute() retorna la lista de usuarios del puerto")
+  @DisplayName("execute() should return users from port")
   void shouldReturnUsersFromPort() {
+
     // Arrange
     final UserModel user =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName("John Arrieta"),
-            new UserEmail("john@example.com"),
-            UserPassword.fromHash("$2a$12$abcdefghijklmnopqrstuO"),
-            UserRole.ADMIN,
-            UserStatus.ACTIVE);
-    when(getAllUsersPort.getAll()).thenReturn(List.of(user));
+            new UserModel(
+                    new UserId("u-001"),
+                    new UserName("John Arrieta"),
+                    new UserEmail("john@example.com"),
+                    UserPassword.fromHash("$2a$12$abcdefghijklmnopqrstuO"),
+                    UserRole.ADMIN,
+                    UserStatus.ACTIVE);
+
+    when(getAllUsersPort.getAll())
+            .thenReturn(List.of(user));
 
     // Act
-    final List<UserModel> result = service.execute();
+    final List<UserModel> result =
+            service.execute();
+
     // Assert
     assertEquals(1, result.size());
-    assertSame(user, result.get(0));
+
+    assertSame(
+            user,
+            result.get(0));
   }
 
   @Test
-  @DisplayName("execute() retorna lista vacía cuando no hay usuarios")
-  void shouldReturnNullWhenNoUsers() {
+  @DisplayName("execute() should return empty list when no users exist")
+  void shouldReturnEmptyListWhenNoUsers() {
 
     // Arrange
-    when(getAllUsersPort.getAll()).thenReturn(List.of());
+    when(getAllUsersPort.getAll())
+            .thenReturn(List.of());
 
     // Act
-    final List<UserModel> result = service.execute();
+    final List<UserModel> result =
+            service.execute();
 
     // Assert
     assertNotNull(result);
+
     assertTrue(result.isEmpty());
   }
 }
