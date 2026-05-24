@@ -19,17 +19,32 @@ public final class LoginHandler implements OperationHandler {
 
   @Override
   public void handle() {
-    final String email    = console.readRequired("Email   : ");
-    final String password = console.readRequired("Password: ");
+
+    final String email =
+            console.readRequired("Email   : ");
+
+    final String password =
+            console.readRequired("Password: ");
+
     try {
-      final UserResponse user = userController.login(new LoginRequest(email, password));
+
+      final UserResponse user =
+              userController.login(
+                      new LoginRequest(
+                              email,
+                              password));
+
       console.println("\n  Login successful. Welcome!");
+
       printer.print(user);
+
     } catch (final InvalidCredentialsException exception) {
-      // VIOLACIÓN Regla 6: se loguea el email del usuario (PII) al registrar el fallo de login.
-      // Los datos de negocio/cliente son PII y NO deben loguearse nunca.
-      log.warning("Intento de login fallido para email: " + email);
-      console.println("  Error: " + exception.getMessage());
+
+      // correccion regla 6 no loguear PII
+      log.warning("Intento de login fallido");
+
+      console.println(
+              "  Error: " + exception.getMessage());
     }
   }
 }
