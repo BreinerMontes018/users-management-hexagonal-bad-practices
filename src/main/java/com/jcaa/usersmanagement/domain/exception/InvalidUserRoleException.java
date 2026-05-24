@@ -2,12 +2,16 @@ package com.jcaa.usersmanagement.domain.exception;
 
 public final class InvalidUserRoleException extends DomainException {
 
+  // correccion regla 10 usar constantes y no textos hardcodeados
+  private static final String INVALID_USER_ROLE_MESSAGE =
+          "The user role '%s' is not valid.";
+
   private InvalidUserRoleException(final String message) {
     super(message);
   }
 
   public static InvalidUserRoleException becauseValueIsInvalid(final String role) {
-    // VIOLACIÓN Regla 10: texto hardcodeado directamente — debe ser una constante.
-    return new InvalidUserRoleException(String.format("The user role '%s' is not valid.", role));
+    return new InvalidUserRoleException(
+            String.format(INVALID_USER_ROLE_MESSAGE, role));
   }
 }
