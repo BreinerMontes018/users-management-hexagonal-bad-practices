@@ -19,9 +19,8 @@ import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.Databa
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.DatabaseConnectionFactory;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.repository.UserRepositoryMySQL;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.UserController;
-
-import java.sql.Connection;
 import jakarta.validation.Validator;
+import java.sql.Connection;
 
 public final class DependencyContainer {
 
@@ -41,77 +40,98 @@ public final class DependencyContainer {
   private final UserController userController;
 
   public DependencyContainer() {
-    final AppProperties properties = new AppProperties();
 
-    final Connection connection = buildDatabaseConnection(properties);
-    final UserRepositoryMySQL userRepository = new UserRepositoryMySQL(connection);
+    final AppProperties properties =
+            new AppProperties();
 
-    // Clean Code - Regla 22 (el código debe ser fácil de borrar y refactorizar):
-    // Para llamar a init() es obligatorio tener la referencia como tipo concreto
-    // UserRepositoryMySQL — ninguna de las interfaces que implementa (SaveUserPort,
-    // GetUserByIdPort, etc.) expone init().
-    // Esto crea un acoplamiento rígido e inesperado:
-    //   1. Si se quiere reemplazar UserRepositoryMySQL por otra implementación,
-    //      hay que tocar también DependencyContainer y asegurarse de que la nueva
-    //      clase también tenga init(), o rediseñar el flujo aquí.
-    //   2. Si se quiere borrar init(), hay que rastrear todos los lugares que lo llaman.
-    //   La estructura del código no permite intercambiar o borrar partes sin
-    //   ajustar múltiples puntos de acoplamiento.
-    // Clean Code - Regla 19 (temporal coupling): además, este patrón init() → uso
-    // establece un orden implícito frágil que el diseño no encapsula ni protege.
-    userRepository.init();
+    final Connection connection =
+            buildDatabaseConnection(properties);
+
+    final UserRepositoryMySQL userRepository =
+            new UserRepositoryMySQL(connection);
 
     final JavaMailEmailSenderAdapter emailSender =
-        new JavaMailEmailSenderAdapter(buildSmtpConfig(properties));
-    final EmailNotificationService emailNotification = new EmailNotificationService(emailSender);
+            new JavaMailEmailSenderAdapter(
+                    buildSmtpConfig(properties));
 
-    // Construir Validator para las validaciones en la capa de aplicación
-    final Validator validator = ValidatorProvider.buildValidator();
+    final EmailNotificationService emailNotification =
+            new EmailNotificationService(emailSender);
+
+    final Validator validator =
+            ValidatorProvider.buildValidator();
 
     final CreateUserUseCase createUserUseCase =
-        new CreateUserService(userRepository, userRepository, emailNotification, validator);
+            new CreateUserService(
+                    userRepository,
+                    userRepository,
+                    emailNotification,
+                    validator);
+
     final UpdateUserUseCase updateUserUseCase =
-        new UpdateUserService(userRepository, userRepository, userRepository, emailNotification, validator);
+            new UpdateUserService(
+                    userRepository,
+                    userRepository,
+                    userRepository,
+                    emailNotification,
+                    validator);
+
     final DeleteUserUseCase deleteUserUseCase =
-        new DeleteUserService(userRepository, userRepository, validator);
-    final GetUserByIdUseCase getUserByIdUseCase = new GetUserByIdService(userRepository, validator);
-    final GetAllUsersUseCase getAllUsersUseCase = new GetAllUsersService(userRepository);
-    final LoginUseCase loginUseCase = new LoginService(userRepository, validator);
+            new DeleteUserService(
+                    userRepository,
+                    userRepository,
+                    validator);
+
+    final GetUserByIdUseCase getUserByIdUseCase =
+            new GetUserByIdService(
+                    userRepository,
+                    validator);
+
+    final GetAllUsersUseCase getAllUsersUseCase =
+            new GetAllUsersService(userRepository);
+
+    final LoginUseCase loginUseCase =
+            new LoginService(
+                    userRepository,
+                    validator);
 
     this.userController =
-        new UserController(
-            createUserUseCase,
-            updateUserUseCase,
-            deleteUserUseCase,
-            getUserByIdUseCase,
-            getAllUsersUseCase,
-            loginUseCase);
+            new UserController(
+                    createUserUseCase,
+                    updateUserUseCase,
+                    deleteUserUseCase,
+                    getUserByIdUseCase,
+                    getAllUsersUseCase,
+                    loginUseCase);
   }
 
   public UserController userController() {
     return userController;
   }
 
-  private static Connection buildDatabaseConnection(final AppProperties properties) {
+  private static Connection buildDatabaseConnection(
+          final AppProperties properties) {
+
     final DatabaseConfig config =
-        new DatabaseConfig(
-            properties.get(DB_HOST),
-            properties.getInt(DB_PORT),
-            properties.get(DB_NAME),
-            properties.get(DB_USER),
-            properties.get(DB_PASSWORD));
-    // VIOLACIÓN Regla 4 (consecuencia): DatabaseConnectionFactory ya no tiene @UtilityClass,
-    // por lo que debe instanciarse para llamar a createConnection.
-    return new DatabaseConnectionFactory().createConnection(config);
+            new DatabaseConfig(
+                    properties.get(DB_HOST),
+                    properties.getInt(DB_PORT),
+                    properties.get(DB_NAME),
+                    properties.get(DB_USER),
+                    properties.get(DB_PASSWORD));
+
+    // correccion regla 4 usar UtilityClass static
+    return DatabaseConnectionFactory.createConnection(config);
   }
 
-  private static SmtpConfig buildSmtpConfig(final AppProperties properties) {
+  private static SmtpConfig buildSmtpConfig(
+          final AppProperties properties) {
+
     return new SmtpConfig(
-        properties.get(SMTP_HOST),
-        properties.getInt(SMTP_PORT),
-        properties.get(SMTP_USER),
-        properties.get(SMTP_PASSWORD),
-        properties.get(SMTP_FROM),
-        properties.get(SMTP_FROM_NAME));
+            properties.get(SMTP_HOST),
+            properties.getInt(SMTP_PORT),
+            properties.get(SMTP_USER),
+            properties.get(SMTP_PASSWORD),
+            properties.get(SMTP_FROM),
+            properties.get(SMTP_FROM_NAME));
   }
 }

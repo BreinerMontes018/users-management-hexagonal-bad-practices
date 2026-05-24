@@ -32,10 +32,6 @@ public final class UserRepositoryMySQL
         GetAllUsersPort,
         DeleteUserPort {
 
-  // correccion regla 4 usar imports especificos
-  private final UserPersistenceMapper persistenceMapper =
-          new UserPersistenceMapper();
-
   private static final String SQL_INSERT =
           "INSERT INTO users "
                   + "(id, name, email, password, role, status, created_at, updated_at) "
@@ -70,19 +66,18 @@ public final class UserRepositoryMySQL
   public UserModel save(final UserModel user) {
 
     final UserPersistenceDto dto =
-            persistenceMapper.fromModelToDto(user);
+            UserPersistenceMapper.fromModelToDto(user);
 
     executeSave(dto);
 
     return findByIdOrFail(user.getId());
   }
 
-  // correccion regla 5 eliminar metodo con muchos parametros primitivos
   @Override
   public UserModel update(final UserModel user) {
 
     final UserPersistenceDto dto =
-            persistenceMapper.fromModelToDto(user);
+            UserPersistenceMapper.fromModelToDto(user);
 
     executeUpdate(dto);
 
@@ -105,7 +100,7 @@ public final class UserRepositoryMySQL
       }
 
       return Optional.of(
-              persistenceMapper.fromResultSetToModel(resultSet));
+              UserPersistenceMapper.fromResultSetToModel(resultSet));
 
     } catch (final SQLException exception) {
 
@@ -131,7 +126,7 @@ public final class UserRepositoryMySQL
       }
 
       return Optional.of(
-              persistenceMapper.fromResultSetToModel(resultSet));
+              UserPersistenceMapper.fromResultSetToModel(resultSet));
 
     } catch (final SQLException exception) {
 
@@ -150,7 +145,7 @@ public final class UserRepositoryMySQL
       final ResultSet resultSet =
               statement.executeQuery();
 
-      return persistenceMapper.fromResultSetToModelList(resultSet);
+      return UserPersistenceMapper.fromResultSetToModelList(resultSet);
 
     } catch (final SQLException exception) {
 
